@@ -3,6 +3,7 @@ import os
 import re
 import json
 import requests
+import hashlib
 from sanzijing import SANZIJING_FULL
 
 app = Flask(__name__)
@@ -28,6 +29,37 @@ def get_access_token():
     params = {"grant_type": "client_credentials", "client_id": API_KEY, "client_secret": SECRET_KEY}
     response = requests.post(url, params=params)
     return response.json().get("access_token")
+
+def get_cache_filename(text):
+    """
+    根据文本内容生成唯一的缓存文件名
+    """
+    # 使用MD5哈希确保文件名的唯一性和有效性
+    md5 = hashlib.md5(text.encode('utf-8')).hexdigest()
+    return f"{md5}.mp3"
+
+def check_audio_cache(text):
+    """
+    检查文本对应的语音缓存是否存在
+    """
+    filename = get_cache_filename(text)
+    filepath = os.path.join(AUDIO_DIR, filename)
+    if os.path.exists(filepath):
+        print(f"找到缓存文件: {filename}")
+        with open(filepath, 'rb') as f:
+            audio_data = f.read()
+        return audio_data
+    return None
+
+def save_to_cache(text, audio_data):
+    """
+    将语音数据保存到缓存
+    """
+    filename = get_cache_filename(text)
+    filepath = os.path.join(AUDIO_DIR, filename)
+    with open(filepath, 'wb') as f:
+        f.write(audio_data)
+    print(f"已保存到缓存: {filename}")
 
 @app.route('/')
 def index():
@@ -84,6 +116,18 @@ def text_to_audio():
             
         # 记录请求日志
         print(f"请求语音合成，文本: {text}")
+        
+        # 检查缓存中是否已经有对应的语音文件
+        cached_audio = check_audio_cache(text)
+        if cached_audio:
+            print("使用缓存的语音文件")
+            return jsonify({
+                'binary': cached_audio.hex(),
+                'suffix': 'mp3',
+                'name': 'text2audio',
+                'tips': '下载音频',
+                'cached': True
+            })
             
         # 尝试获取token
         try:
@@ -104,7 +148,7 @@ def text_to_audio():
             'cuid': CUID,
             'ctp': 1,#客户端类型选择，web端填写固定值1
             'lan': 'zh',
-            'spd': 4,  # 语速，取值0-15，默认为5中语速
+            'spd': 3,  # 语速，取值0-15，默认为5中语速
             'pit': 5,  #音调，取值0-15，默认为5中语调
             'vol': 7,  #音量，基础音库取值0-9，精品音库取值0-15，默认为5中音量（取值为0时为音量最小值，并非为无声）
             'per': 4,  # 度小宇=1，度小美=0，度逍遥（基础）=3，度丫丫=4
@@ -126,13 +170,17 @@ def text_to_audio():
             
             # 检查响应是否为音频
             if response.headers.get('Content-Type') == 'audio/mp3':
+                # 保存到缓存
+                save_to_cache(text, response.content)
+                
                 # 直接返回音频二进制数据
-                print("成功获取语音数据")
+                print("成功获取语音数据并缓存")
                 return jsonify({
                     'binary': response.content.hex(),
                     'suffix': 'mp3',
                     'name': 'text2audio',
-                    'tips': '下载音频'
+                    'tips': '下载音频',
+                    'cached': False
                 })
             else:
                 # 如果返回的是错误信息
@@ -156,6 +204,39 @@ def text_to_audio():
     except Exception as e:
         print(f"语音合成整体异常: {str(e)}")
         return jsonify({'fallback': True, 'error': str(e)}), 200
+
+# 获取已缓存的语音文件列表
+@app.route('/api/audio/cached')
+def get_cached_audio():
+    """获取已缓存的语音文件列表"""
+    try:
+        files = os.listdir(AUDIO_DIR)
+        mp3_files = [f for f in files if f.endswith('.mp3')]
+        return jsonify({
+            'count': len(mp3_files),
+            'files': mp3_files
+        })
+    except Exception as e:
+        return jsonify({'error': f'获取缓存文件列表失败: {str(e)}'}), 500
+
+@app.route('/get_cache_count')
+def get_cache_count():
+    try:
+        count = len(os.listdir(AUDIO_DIR))
+        return jsonify({'count': count})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/clear_cache', methods=['POST'])
+def clear_cache():
+    try:
+        for filename in os.listdir(AUDIO_DIR):
+            file_path = os.path.join(AUDIO_DIR, filename)
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 # 静态音频文件服务
 @app.route('/static/audio/<path:filename>')

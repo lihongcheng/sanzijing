@@ -240,7 +240,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             
-            console.log(`尝试使用百度语音合成API: ${text}`);
+            console.log(`尝试获取语音: ${text}`);
             
             // 调用后端API生成语音
             const response = await fetch('/api/text2audio', {
@@ -273,6 +273,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             if (data.binary) {
+                // 如果使用了缓存，记录日志
+                if (data.cached) {
+                    console.log('使用缓存的语音文件');
+                } else {
+                    console.log('使用新生成的语音文件并已缓存');
+                }
+                
                 // 将二进制字符串转换为ArrayBuffer
                 const binaryString = data.binary;
                 const bytes = new Uint8Array(binaryString.length / 2);
@@ -293,7 +300,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
                 
                 // 播放音频
-                console.log('开始播放百度合成的语音');
+                console.log('开始播放语音');
                 await audioElement.play().catch(error => {
                     console.error('音频播放失败:', error);
                     useBrowserSpeech(text);

@@ -438,4 +438,22 @@ main {
         width: 100%;
         margin-bottom: 8px;
     }
+}
+
+/* 缓存按钮样式 */
+.cache-btn {
+    display: none;
+}
+
+.cache-count {
+    display: none;
+}
+
+/* 缓存信息样式 */
+.cache-info {
+    display: none;
+}
+
+.cache-actions {
+    display: none;
 } 

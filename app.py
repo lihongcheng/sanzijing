@@ -8,9 +8,9 @@ from sanzijing import SANZIJING_FULL
 app = Flask(__name__)
 
 # 百度语音合成API配置
-API_KEY = "H7yDoUtICfUDcJaH9tMTC1TH"
-SECRET_KEY = "nCUmRKn4OKAWWEFC5PWgtjXHqjK6yQEM"
-CUID = "OR9fCH6gmVG21J78E4cetdOOIoeCypMd"
+API_KEY = "XXX"
+SECRET_KEY = "XXX"
+CUID = "XXX"
 
 # 定义静态资源目录
 AUDIO_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static/audio')

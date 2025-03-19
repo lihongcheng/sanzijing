@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三字经学习 - 为儿童设计的三字经学习应用</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>趣味三字经</h1>
+            <div class="header-controls">
+                <button id="prev-btn" class="nav-btn">上一句</button>
+                <span id="progress">1/124</span>
+                <button id="next-btn" class="nav-btn">下一句</button>
+            </div>
+        </header>
+        
+        <main>
+            <div class="content-wrapper">
+                <div class="character-display">
+                    <!-- 三字经内容将通过JavaScript动态填充 -->
+                </div>
+                <div class="character-meaning">
+                    <!-- 解释内容将通过JavaScript动态填充 -->
+                </div>
+            </div>
+            
+            <div class="interaction-panel">
+                <button id="play-btn" class="action-btn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    朗读
+                </button>
+                <button id="repeat-btn" class="action-btn">
+                    <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z"/>
+                    </svg>
+                    复习
+                </button>
+            </div>
+        </main>
+    </div>
+    
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html> 
